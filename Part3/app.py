@@ -9,8 +9,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.linear_model import Perceptron
 
-PART1_MODEL_DIR = r"D:\parh le bhai\deepdetect-suite\Part1\part1_artifacts"
-PART2_MODEL_DIR = r"D:\parh le bhai\deepdetect-suite\Part2\part2_artifacts"
+import os
+
+PART1_MODEL_DIR = os.path.join("Part1", "part1_artifacts")
+PART2_MODEL_DIR = os.path.join("Part2", "part2_artifacts")
+
 
 # ===================
 # Load Part 1 Models (Audio Deepfake)
