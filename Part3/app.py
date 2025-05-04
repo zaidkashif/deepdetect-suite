@@ -9,38 +9,51 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.linear_model import Perceptron
 
-import os
-
+# ===================
+# Define Directories
+# ===================
 PART1_MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'Part1', 'part1_artifacts')
 PART2_MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'Part2', 'part2_artifacts')
 
+# ===================
+# Safe Model Loading
+# ===================
+def safe_load_model(path):
+    try:
+        return joblib.load(path)
+    except FileNotFoundError:
+        st.warning(f"⚠️ Model file not found: {path}")
+        return None
 
+def safe_load_config(path):
+    try:
+        with open(path, "rb") as f:
+            return joblib.load(f)
+    except FileNotFoundError:
+        st.warning(f"⚠️ Config file not found: {path}")
+        return None
 
 # ===================
 # Load Part 1 Models (Audio Deepfake)
 # ===================
 audio_models = {
-    "Logistic Regression": joblib.load(os.path.join(PART1_MODEL_DIR, "logistic_regression_p1.joblib")),
-    "SVM": joblib.load(os.path.join(PART1_MODEL_DIR, "svm_p1.joblib")),
-    "Perceptron": joblib.load(os.path.join(PART1_MODEL_DIR, "perceptron_p1.joblib"))
+    "Logistic Regression": safe_load_model(os.path.join(PART1_MODEL_DIR, "logistic_regression_p1.joblib")),
+    "SVM": safe_load_model(os.path.join(PART1_MODEL_DIR, "svm_p1.joblib")),
+    "Perceptron": safe_load_model(os.path.join(PART1_MODEL_DIR, "perceptron_p1.joblib")),
 }
-scaler_p1 = joblib.load(os.path.join(PART1_MODEL_DIR, "scaler_p1.joblib"))
-with open(os.path.join(PART1_MODEL_DIR, "part1_config.pkl"), "rb") as f:
-    config_p1 = joblib.load(f)
-
+scaler_p1 = safe_load_model(os.path.join(PART1_MODEL_DIR, "scaler_p1.joblib"))
+config_p1 = safe_load_config(os.path.join(PART1_MODEL_DIR, "part1_config.pkl"))
 
 # ===================
 # Load Part 2 Models (Software Defects)
 # ===================
 text_models = {
-    "Logistic Regression": joblib.load(os.path.join(PART2_MODEL_DIR, "logistic_regression_p2.joblib")),
-    "SVM": joblib.load(os.path.join(PART2_MODEL_DIR, "svm_p2.joblib")),
-    "Perceptron": joblib.load(os.path.join(PART2_MODEL_DIR, "perceptron_p2.joblib"))
+    "Logistic Regression": safe_load_model(os.path.join(PART2_MODEL_DIR, "logistic_regression_p2.joblib")),
+    "SVM": safe_load_model(os.path.join(PART2_MODEL_DIR, "svm_p2.joblib")),
+    "Perceptron": safe_load_model(os.path.join(PART2_MODEL_DIR, "perceptron_p2.joblib")),
 }
-vectorizer = joblib.load(os.path.join(PART2_MODEL_DIR, "tfidf_vectorizer.joblib"))
-with open(os.path.join(PART2_MODEL_DIR, "part2_config.pkl"), "rb") as f:
-    config_p2 = joblib.load(f)
-
+vectorizer = safe_load_model(os.path.join(PART2_MODEL_DIR, "tfidf_vectorizer.joblib"))
+config_p2 = safe_load_config(os.path.join(PART2_MODEL_DIR, "part2_config.pkl"))
 
 # ===================
 # Streamlit UI Layout
@@ -72,17 +85,21 @@ with tabs[0]:
     predict_audio = st.button("🎧 Analyze Audio")
 
     if predict_audio and uploaded_file:
-        audio, sr = sf.read(uploaded_file)
-        if audio.ndim > 1:
-            audio = np.mean(audio, axis=1)
-        max_len = int(config_p1['MAX_AUDIO_LEN_SECONDS'] * sr)
-        audio = librosa.util.fix_length(audio, max_len)
-        mfcc = librosa.feature.mfcc(y=audio.astype(np.float32), sr=sr, n_mfcc=config_p1['N_MFCC'])
-        features = np.mean(mfcc.T, axis=0).reshape(1, -1)
-        features_scaled = scaler_p1.transform(features)
-        pred = audio_models[selected_audio_model].predict(features_scaled)[0]
-        result_text = "✅ Bonafide (Real)" if pred == 0 else "⚠️ Deepfake"
-        st.success(f"**Prediction:** {result_text}")
+        model = audio_models[selected_audio_model]
+        if model is None or scaler_p1 is None or config_p1 is None:
+            st.error("❌ Required model or config is missing. Please check file availability.")
+        else:
+            audio, sr = sf.read(uploaded_file)
+            if audio.ndim > 1:
+                audio = np.mean(audio, axis=1)
+            max_len = int(config_p1['MAX_AUDIO_LEN_SECONDS'] * sr)
+            audio = librosa.util.fix_length(audio, max_len)
+            mfcc = librosa.feature.mfcc(y=audio.astype(np.float32), sr=sr, n_mfcc=config_p1['N_MFCC'])
+            features = np.mean(mfcc.T, axis=0).reshape(1, -1)
+            features_scaled = scaler_p1.transform(features)
+            pred = model.predict(features_scaled)[0]
+            result_text = "✅ Bonafide (Real)" if pred == 0 else "⚠️ Deepfake"
+            st.success(f"**Prediction:** {result_text}")
 
 # =============================
 # Tab 2: Text Defect Prediction
@@ -94,13 +111,17 @@ with tabs[1]:
     predict_text = st.button("🧠 Predict Defects")
 
     if predict_text and bug_text:
-        tfidf_input = vectorizer.transform([bug_text])
-        prediction = text_models[selected_text_model].predict(tfidf_input)[0]
-        labels = config_p2['labels']
-        predicted_labels = [label for label, value in zip(labels, prediction) if value == 1]
-        st.subheader("🔎 Predicted Labels:")
-        if predicted_labels:
-            for label in predicted_labels:
-                st.success(f"• {label}")
+        model = text_models[selected_text_model]
+        if model is None or vectorizer is None or config_p2 is None:
+            st.error("❌ Required model or config is missing. Please check file availability.")
         else:
-            st.warning("No defect labels predicted.")
+            tfidf_input = vectorizer.transform([bug_text])
+            prediction = model.predict(tfidf_input)[0]
+            labels = config_p2['labels']
+            predicted_labels = [label for label, value in zip(labels, prediction) if value == 1]
+            st.subheader("🔎 Predicted Labels:")
+            if predicted_labels:
+                for label in predicted_labels:
+                    st.success(f"• {label}")
+            else:
+                st.warning("No defect labels predicted.")
