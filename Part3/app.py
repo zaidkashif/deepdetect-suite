@@ -61,6 +61,12 @@ config_p2 = safe_load_config(os.path.join(PART2_MODEL_DIR, "part2_config.pkl"))
 # Streamlit UI Layout
 # ===================
 
+# 🔍 Warn about any missing models/configs
+missing = [k for k, v in {**audio_models, **text_models, "Scaler": scaler_p1, "Vectorizer": vectorizer}.items() if v is None]
+if missing:
+    st.warning(f"⚠️ Missing components: {', '.join(missing)}")
+
+
 st.markdown(
     """
     <style>
