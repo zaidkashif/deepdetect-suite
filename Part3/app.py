@@ -8,6 +8,7 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.linear_model import Perceptron
+st.set_page_config(page_title="AI Predictive Tools", layout="wide")
 
 # ===================
 # Define Directories
@@ -58,7 +59,7 @@ config_p2 = safe_load_config(os.path.join(PART2_MODEL_DIR, "part2_config.pkl"))
 # ===================
 # Streamlit UI Layout
 # ===================
-st.set_page_config(page_title="AI Predictive Tools", layout="wide")
+
 st.markdown(
     """
     <style>
