@@ -11,8 +11,9 @@ from sklearn.linear_model import Perceptron
 
 import os
 
-PART1_MODEL_DIR = os.path.join("Part1", "part1_artifacts")
-PART2_MODEL_DIR = os.path.join("Part2", "part2_artifacts")
+PART1_MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'Part1', 'part1_artifacts')
+PART2_MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'Part2', 'part2_artifacts')
+
 
 
 # ===================
