@@ -13,8 +13,9 @@ st.set_page_config(page_title="AI Predictive Tools", layout="wide")
 # ===================
 # Define Directories
 # ===================
-PART1_MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'Part1', 'part1_artifacts')
-PART2_MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'Part2', 'part2_artifacts')
+PART1_MODEL_DIR = os.path.dirname(__file__)
+PART2_MODEL_DIR = os.path.dirname(__file__)
+
 
 # ===================
 # Safe Model Loading
