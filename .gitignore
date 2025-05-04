@@ -1,0 +1,56 @@
+# =========================
+# Python General
+# =========================
+__pycache__/
+*.py[cod]
+*.so
+*.log
+
+# =========================
+# Jupyter Notebook Checkpoints
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Virtual Environment (DS4Env or any venv)
+# =========================
+/ds4env
+env/
+venv/
+
+# =========================
+# Streamlit Cache & Config
+# =========================
+.streamlit/
+.stcache/
+.stcache/
+
+# =========================
+# Data & Models
+# =========================
+*.joblib
+*.pkl
+*.h5
+*.keras
+*.npy
+*.npz
+
+# =========================
+# Datasets & Audio Files
+# =========================
+*.csv
+*.wav
+*.flac
+
+# =========================
+# OS / Editor Specific
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# =========================
+# Git Files
+# =========================
+*.swp
